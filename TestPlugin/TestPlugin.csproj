@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Anima.Core\Anima.Core.csproj" />
+    <ProjectReference Include="..\Anima-V4\Anima.Core\Anima.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
