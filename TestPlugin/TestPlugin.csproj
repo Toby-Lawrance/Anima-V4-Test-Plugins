@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>../build</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Anima.Core\Anima.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NetworkCore">
+      <HintPath>..\..\Anima-V4-Server\NetworkCore\bin\Debug\net5.0\NetworkCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
