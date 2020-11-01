@@ -12,10 +12,4 @@
     <ProjectReference Include="..\Anima-V4\Anima.Core\Anima.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="NetworkCore">
-      <HintPath>..\..\Anima-V4-Server\NetworkCore\bin\Debug\net5.0\NetworkCore.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
