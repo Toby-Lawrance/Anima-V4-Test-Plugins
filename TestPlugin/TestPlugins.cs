@@ -14,9 +14,8 @@ namespace TestPlugin
         public override void Init()
         {
             base.Init();
-            if (Anima.Instance.KnowledgePool.Exists("Count")) return;
             var succ = Anima.Instance.KnowledgePool.TryInsertValue("Count", 0);
-            if(!succ) {Anima.Instance.ErrorStream.WriteLine("Unable to set count");}
+            if(succ) {Anima.Instance.WriteLine("Set count initial value");}
 
         }
 
