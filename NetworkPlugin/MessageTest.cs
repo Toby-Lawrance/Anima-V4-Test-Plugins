@@ -74,7 +74,7 @@ namespace NetworkPlugin
                             ReadContents += line + Anima.NewLineChar;
                         }
                         Anima.Instance.WriteLine($"Received: {ReadContents} from: {client.Client.RemoteEndPoint}");
-                        Anima.Instance.MailBoxes.PostMessage(new Message<string>(client.Client.RemoteEndPoint.ToString(), this.Identifier,
+                        Anima.Instance.SystemMail.PostMessage(new Message<string>(client.Client.RemoteEndPoint.ToString(), this.Identifier,
                             "Remote", ReadContents));
                         client.Close();
                     }

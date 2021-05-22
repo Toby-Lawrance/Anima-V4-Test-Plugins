@@ -4,6 +4,7 @@ using System.Linq;
 using Core;
 using Core.CoreData;
 using Core.Plugins;
+using Newtonsoft.Json;
 
 namespace TestPlugin
 {
@@ -27,7 +28,7 @@ namespace TestPlugin
             if (succ)
             {
                 var msg = Message<int>.CreateMessage(this, "Test Plugin 2", Count);
-                Anima.Instance.MailBoxes.PostMessage(msg);
+                Anima.Instance.SystemMail.PostMessage(msg);
                 
                 Anima.Instance.WriteLine($"Count:{Count}");
                 var setSucc = counting.TrySetValue("Count", Count + 1);
@@ -38,6 +39,16 @@ namespace TestPlugin
                 Anima.Instance.ErrorStream.WriteLine("Couldn't get Count");
             }
         }
+
+        public override string Serialize()
+        {
+            return JsonConvert.SerializeObject(counting);
+        }
+
+        public override void Deserialize(string jsonData)
+        {
+            counting = JsonConvert.DeserializeObject<KnowledgeBase<int>>(jsonData);
+        }
     }
 
 
@@ -47,13 +58,13 @@ namespace TestPlugin
 
         public override void Tick()
         {
-            if (Core.Anima.Instance.MailBoxes.CheckNumMessages(this) == 0)
+            if (Core.Anima.Instance.SystemMail.CheckNumMessages(this) == 0)
             {
                 Core.Anima.Instance.WriteLine($"No messages for: {this.Identifier}");
             }
-            while (Core.Anima.Instance.MailBoxes.CheckNumMessages(this) > 0)
+            while (Core.Anima.Instance.SystemMail.CheckNumMessages(this) > 0)
             {
-                Core.Anima.Instance.WriteLine(Core.Anima.Instance.MailBoxes.GetMessage<int>(this));
+                Core.Anima.Instance.WriteLine(Core.Anima.Instance.SystemMail.GetMessage<int>(this));
             }
             
         }
