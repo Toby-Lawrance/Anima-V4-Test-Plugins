@@ -7,6 +7,7 @@ using Core;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
+using Core.CoreData;
 using Newtonsoft.Json;
 
 namespace NetworkPlugin
@@ -14,7 +15,8 @@ namespace NetworkPlugin
     public static class MessageHolder
     {
         private static bool IPv6Support = Socket.OSSupportsIPv6;
-
+        public static KnowledgeBase<int> ports = new KnowledgeBase<int>();
+        public static KnowledgeBase<string[]> addresses = new KnowledgeBase<string[]>();
         public class MessageServer : Core.Plugins.Module
         {
             private StreamReader inStream;
@@ -34,9 +36,9 @@ namespace NetworkPlugin
 
                 if (server is null)
                 {
-                    if (Anima.Instance.KnowledgePool.Exists("IP-Port"))
+                    if (ports.Exists("IP-Port"))
                     {
-                        Anima.Instance.KnowledgePool.TryGetValue("IP-Port", out int Port);
+                        ports.TryGetValue("IP-Port", out int Port);
                         var info = Dns.GetHostEntry(Dns.GetHostName());
                         info.AddressList.Select(a => Anima.Instance.WriteLine($"Server Address: {a}"));
                         var address = info.AddressList[0];
@@ -48,8 +50,8 @@ namespace NetworkPlugin
                     }
                     else
                     {
-                        Anima.Instance.KnowledgePool.TryInsertValue("IP-Addresses", new string[] { });
-                        Anima.Instance.KnowledgePool.TryInsertValue("IP-Port", 0);
+                        addresses.TryInsertValue("IP-Addresses", new string[] { });
+                        ports.TryInsertValue("IP-Port", 0);
                         Anima.Instance.ErrorStream.WriteLine("Error: Needed to create values in Anima pool");
                     }
                 }
@@ -72,7 +74,7 @@ namespace NetworkPlugin
                             ReadContents += line + Anima.NewLineChar;
                         }
                         Anima.Instance.WriteLine($"Received: {ReadContents} from: {client.Client.RemoteEndPoint}");
-                        Anima.Instance.MailBoxes.PostMessage(new Message(client.Client.RemoteEndPoint.ToString(), this.Identifier,
+                        Anima.Instance.MailBoxes.PostMessage(new Message<string>(client.Client.RemoteEndPoint.ToString(), this.Identifier,
                             "Remote", ReadContents));
                         client.Close();
                     }
@@ -156,10 +158,10 @@ namespace NetworkPlugin
                 if (outBoundClients is not null) return;
 
                 outBoundClients = new Dictionary<IPAddress, int>();
-                if (Anima.Instance.KnowledgePool.Exists("IP-Addresses") && Anima.Instance.KnowledgePool.Exists("IP-Port"))
+                if (addresses.Exists("IP-Addresses") && ports.Exists("IP-Port"))
                 {
-                    Anima.Instance.KnowledgePool.TryGetValue("IP-Addresses", out IEnumerable<string> addresses);
-                    Anima.Instance.KnowledgePool.TryGetValue("IP-Port", out port);
+                    MessageHolder.addresses.TryGetValue("IP-Addresses", out string[] addresses);
+                    ports.TryGetValue("IP-Port", out port);
 
                     var connectionTasks = addresses.Select(IPAddress.Parse).Select(ip => TryConnect(ip,port)).ToArray();
 
@@ -180,8 +182,8 @@ namespace NetworkPlugin
                 }
                 else
                 {
-                    Anima.Instance.KnowledgePool.TryInsertValue("IP-Addresses", new string[] { });
-                    Anima.Instance.KnowledgePool.TryInsertValue("IP-Port", 0);
+                    addresses.TryInsertValue("IP-Addresses", new string[] { });
+                    ports.TryInsertValue("IP-Port", 0);
                     Anima.Instance.ErrorStream.WriteLine("Error: Needed to create IP-Addresses in Anima pool");
                 }
             }
@@ -198,14 +200,16 @@ namespace NetworkPlugin
 
             }
 
+            public KnowledgeBase<int> counting = new KnowledgeBase<int>();
+
             public override void Tick()
             {
                 if (!SuccessfulSetup) return;
-                if (!Anima.Instance.KnowledgePool.Exists("Count")) return;
+                if (!counting.Exists("Count")) return;
 
                 Anima.Instance.WriteLine($"Attempting to send network messages");
 
-                var message = Anima.Serialize(new KeyValuePair<string, KeyValuePair<Type, object>>("Count", Anima.Instance.KnowledgePool.Pool["Count"]));
+                var message = Anima.Serialize(new KeyValuePair<string, int>("Count", counting.Pool["Count"]));
                 var tasks = outBoundClients.Where(tup => tup.Value > (MaxFailures * -1)).Select(tup => TrySendMessage(tup.Key,message)).ToArray();
                 Task.WaitAll(tasks);
                 foreach (var task in tasks)
